@@ -1,2 +1,2 @@
 # GithubCommits
-Testing Github Commits
+Testing Auto Github Commits
