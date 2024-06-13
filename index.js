@@ -5,7 +5,7 @@ const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
 
 
 const fakeCommits = async () => {
-  for (let index = 1; index <= 5000; index++) {
+  for (let index = 1; index <= 1000; index++) {
     try {
       let commitMessage = `This i a commit number: ${v1()}`
 
