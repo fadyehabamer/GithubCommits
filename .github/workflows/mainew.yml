@@ -1,0 +1,36 @@
+name: Auto Fake Commits
+
+on:
+  schedule:
+    # Runs every 3 days at midnight UTC (adjust below if you want local time)
+    - cron: '0 0 */3 * *'
+  workflow_dispatch: # Allows manual run from the Actions tab
+
+jobs:
+  run-fake-commits:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          persist-credentials: true
+          fetch-depth: 0
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Configure Git
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Run fake commits script 2
+        run: node index.js
+
+      - name: Push changes
+        run: |
+          git push origin main
