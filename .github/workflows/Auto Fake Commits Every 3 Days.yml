@@ -25,4 +25,4 @@ jobs:
         run: npm ci || npm install
 
       - name: Run fake commits script
-        run: node fake-commits.js
+        run: node index.js
