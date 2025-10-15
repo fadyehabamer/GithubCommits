@@ -1,26 +1,46 @@
-const fs = require('fs');
-const { execSync } = require('child_process');
-const { v1 } = require('uuid');
+const fs = require("fs");
+const { execSync } = require("child_process");
+const { v1 } = require("uuid");
+
+// Simple async delay
 const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
 
-
 const fakeCommits = async () => {
-  for (let index = 1; index <= 1000; index++) {
-    try {
-      let commitMessage = `This i a commit number: ${v1()}`
+  try {
+    // ✅ Configure git identity (required in GitHub Actions)
+    execSync('git config user.name "github-actions[bot]"');
+    execSync('git config user.email "github-actions[bot]@users.noreply.github.com"');
 
-      await fs.writeFileSync('./commits.txt', `${commitMessage}\n`);
-      await execSync(`git add . && git commit -m"${commitMessage}"`);
-      await delay(50) /// waiting 1 second.
-      console.log(`===================> { ${index} } <=====================`);
+    console.log("✅ Git identity configured");
 
-    } catch (error) {
-      console.log(error);
+    // Run up to 1000 fake commits
+    for (let index = 1; index <= 1000; index++) {
+      try {
+        const commitMessage = `This is a commit number: ${v1()}`;
+
+        // Write message to file to ensure a change exists
+        fs.writeFileSync("./commits.txt", `${commitMessage}\n`, { flag: "a" });
+
+        // Stage & commit
+        execSync(`git add commits.txt`);
+        execSync(`git commit -m "${commitMessage}"`);
+
+        console.log(`✅ Commit #${index} created`);
+        await delay(100); // small delay between commits
+      } catch (innerError) {
+        console.log(`⚠️ Skipped commit #${index}: ${innerError.message}`);
+      }
     }
+
+    // ✅ Push commits to main (change to master if needed)
+    execSync("git push origin main", { stdio: "inherit" });
+
+    console.log("🚀 All commits pushed successfully!");
+  } catch (error) {
+    console.error("❌ Error during fake commits:", error.message);
+    process.exit(1);
   }
+};
 
-  await execSync('git push -u origin master && git push -u origin2 master');
-
-}
-
+// Run the function
 fakeCommits();
