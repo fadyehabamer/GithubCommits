@@ -2,9 +2,9 @@ name: Auto Commit & Run index.js Weekly
 
 on:
   schedule:
-    # Every Monday at 00:00 UTC
+    # Every Monday at 00:00 UTC (use cron syntax)
     - cron: "0 0 * * 1"
-  workflow_dispatch: # manual trigger if you want to test it anytime
+  workflow_dispatch: # allows manual runs
 
 jobs:
   auto-commit:
@@ -14,7 +14,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          token: ${{ secrets.GITHUB_TOKEN }} # allows pushing changes
+          token: ${{ secrets.GITHUB_TOKEN }} # built-in, no need to create manually
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
@@ -23,8 +23,8 @@ jobs:
 
       - name: Configure Git
         run: |
-          git config --global user.name "github-actions[bot]"
-          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
 
       - name: Install dependencies
         run: npm install
@@ -35,6 +35,10 @@ jobs:
       - name: Commit and push changes
         run: |
           git add .
-          git commit -m "Auto commit from GitHub Actions - $(date)"
-          git push
-        continue-on-error: true  # prevent failure if there are no changes
+          # Check if there are changes before committing
+          if ! git diff --cached --quiet; then
+            git commit -m "Auto commit from GitHub Actions - $(date -u '+%Y-%m-%d %H:%M:%S UTC')"
+            git push
+          else
+            echo "✅ No changes to commit."
+          fi
