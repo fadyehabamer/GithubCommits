@@ -1,26 +1,40 @@
-name: Run index.js weekly
+name: Auto Commit & Run index.js Weekly
 
 on:
   schedule:
     # Every Monday at 00:00 UTC
     - cron: "0 0 * * 1"
-  workflow_dispatch: # allows manual trigger
+  workflow_dispatch: # manual trigger if you want to test it anytime
 
 jobs:
-  run-script:
+  auto-commit:
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }} # allows pushing changes
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
           node-version: "20"
 
+      - name: Configure Git
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+
       - name: Install dependencies
         run: npm install
 
       - name: Run index.js
         run: node index.js
+
+      - name: Commit and push changes
+        run: |
+          git add .
+          git commit -m "Auto commit from GitHub Actions - $(date)"
+          git push
+        continue-on-error: true  # prevent failure if there are no changes
